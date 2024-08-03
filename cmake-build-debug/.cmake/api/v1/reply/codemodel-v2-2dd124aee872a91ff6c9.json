@@ -1,0 +1,78 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.28"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "one_networking",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "one_networking::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-one_networking-Debug-b3017b99167136bc9f0f.json",
+					"name" : "one_networking",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "one_networking_client::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-one_networking_client-Debug-8a9df4a6c693ea5d8aa1.json",
+					"name" : "one_networking_client",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "one_networking_server::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-one_networking_server-Debug-5d23218c89a199e84beb.json",
+					"name" : "one_networking_server",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/cygdrive/c/Users/stefjen07/CLionProjects/one-networking/cmake-build-debug",
+		"source" : "/cygdrive/c/Users/stefjen07/CLionProjects/one-networking"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}

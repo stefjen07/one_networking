@@ -1,0 +1,5 @@
+/cygdrive/c/Users/stefjen07/CLionProjects/one-networking/cmake-build-debug/CMakeFiles/one_networking.dir
+/cygdrive/c/Users/stefjen07/CLionProjects/one-networking/cmake-build-debug/CMakeFiles/one_networking_server.dir
+/cygdrive/c/Users/stefjen07/CLionProjects/one-networking/cmake-build-debug/CMakeFiles/one_networking_client.dir
+/cygdrive/c/Users/stefjen07/CLionProjects/one-networking/cmake-build-debug/CMakeFiles/edit_cache.dir
+/cygdrive/c/Users/stefjen07/CLionProjects/one-networking/cmake-build-debug/CMakeFiles/rebuild_cache.dir
