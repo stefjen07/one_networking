@@ -2,6 +2,7 @@
 #define CLIENT_H
 
 #include "../socket.h"
+#include "../message.h"
 #include <string>
 #include <netdb.h>
 
@@ -20,7 +21,7 @@ public:
     void stop() const noexcept;
 private:
     int sendMessage(const std::string& message) const noexcept;
-    int receiveMessage(char* writable_buff) const noexcept;
+    Message* receiveMessage() const noexcept;
     static void printInputPrompt() noexcept;
     int inputHandler();
     int handleConnection() noexcept;

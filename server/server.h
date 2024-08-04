@@ -7,12 +7,14 @@
 #include "../message_length.h"
 #include "../connection_info.h"
 #include "../socket.h"
+#include "server_config.h"
+#include "../message.h"
 
 #define BACKLOG 10
 
 class Server {
 public:
-    Server(const char* hostname, in_port_t port): hostname(hostname), port(port) {}
+    Server(const ServerConfig config): config(config) {}
 
     Server(const Server& other) = delete;
     Server& operator=(const Server* other) = delete;
@@ -21,17 +23,17 @@ public:
 public:
     int start() noexcept;
     void stop() noexcept;
+    static int sendMessage(SOCKET recipient, Message message);
 private:
     SOCKET createServerSocket(addrinfo* bind_address) noexcept;
     int configureServerSocket(SOCKET server_socket) noexcept;
-    int broadcastMessage(const void* message, MESSAGE_LENGTH_TYPE length) noexcept;
-    int receiveMessage(SOCKET sender_socketfd, char* writable_buffer) noexcept;
+    int broadcastMessage(Message message) noexcept;
+    Message* receiveMessage(SOCKET sender_socketfd) noexcept;
     int acceptConnection() noexcept;
     void disconnectClient(SOCKET sockfd) noexcept;
     int handleConnections() noexcept;
 private:
-    const std::string hostname;
-    in_port_t port;
+    const ServerConfig config;
 
     SOCKET server_socket;
 

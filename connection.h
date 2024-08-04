@@ -7,6 +7,7 @@
 #include "connection_info.h"
 #include "socket.h"
 #include "logging.h"
+#include "message.h"
 
 addrinfo* resolveConnectionAddress(std::string hostname, in_port_t port) noexcept{
     DEBUG("Resolving connection address");
@@ -58,11 +59,7 @@ int sendMessage(SOCKET socket, const void* message, MESSAGE_LENGTH_TYPE length) 
     return sent_bytes;
 }
 
-int receiveMessage(SOCKET socket, char* writable_buffer, std::unordered_map<SOCKET, ConnectionInfo>* clients) noexcept{
-    if (!writable_buffer){
-        ERROR(-1, "receiveMessage(): writable_buffer is NULL.");
-    }
-
+Message* receiveMessage(SOCKET socket, std::unordered_map<SOCKET, ConnectionInfo>* clients) noexcept{
     std::string conn_info_description;
     if (clients != nullptr) {
         conn_info_description = clients->at(socket).toString();
@@ -73,11 +70,13 @@ int receiveMessage(SOCKET socket, char* writable_buffer, std::unordered_map<SOCK
     int recv_bytes = recv(socket, &message_length, MESSAGE_LENGTH_PREFIX_SIZE, 0);
     if (recv_bytes <= 0){
         if (recv_bytes < 0){
-            ERROR(recv_bytes, "Failed to receive message length from " << conn_info_description << " : recv(): " << std::system_category().message(GET_SOCKET_ERRNO()));
+            ERROR(nullptr, "Failed to receive message length from " << conn_info_description << " : recv(): " << std::system_category().message(GET_SOCKET_ERRNO()));
         }
-        return 0;
+        return nullptr;
     }
     DEBUG(conn_info_description << " (length): '" << message_length);
+
+    char* writable_buffer = (char*) malloc(message_length);
 
     recv_bytes = recv(socket, writable_buffer, message_length, 0);
     if (recv_bytes <= 0){
@@ -86,8 +85,16 @@ int receiveMessage(SOCKET socket, char* writable_buffer, std::unordered_map<SOCK
         }
     }
 
-    DEBUG(conn_info_description << " (" << message_length << " bytes): '" << writable_buffer);
-    return recv_bytes;
+    DEBUG(conn_info_description << " (" << message_length << " bytes): '" << std::string(writable_buffer, recv_bytes));
+
+    if (recv_bytes < 0) {
+        return nullptr;
+    }
+
+    auto* result = new Message;
+    result->content = writable_buffer;
+    result->length = message_length;
+    return result;
 }
 
 #endif

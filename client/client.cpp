@@ -37,8 +37,8 @@ int Client::sendMessage(const std::string &message) const noexcept {
     ::sendMessage(socket, message.data(), message.size());
 }
 
-int Client::receiveMessage(char *writable_buff) const noexcept {
-    ::receiveMessage(socket, writable_buff, nullptr);
+Message* Client::receiveMessage() const noexcept {
+    ::receiveMessage(socket, nullptr);
 }
 
 void Client::printInputPrompt() noexcept {
@@ -66,21 +66,12 @@ int Client::handleConnection() noexcept {
     std::thread input_worker_thread(&Client::inputHandler, this);
     input_worker_thread.detach();
     while (true){
-        char msg_buff[MESSAGE_MAX_SIZE];
-        memset(msg_buff, 0x00, sizeof(msg_buff));
-
-        int recv_bytes = receiveMessage(msg_buff);
-        if (recv_bytes <= 0){
-            if (recv_bytes == 0){
-                INFO("Remote host has closed the connection.");
-                std::exit(1);
-            }
-            else{
-                std::cerr << "[Error] Failed to receive data from the remote host: recv(): " << std::system_category().message(GET_SOCKET_ERRNO()) << std::endl;
-                std::exit(1);
-            }
+        Message* recv_bytes = receiveMessage();
+        if (recv_bytes == nullptr) {
+            std::cerr << "[Error] Failed to receive data from the remote host: recv(): " << std::system_category().message(GET_SOCKET_ERRNO()) << std::endl;
+            std::exit(1);
         }
-        std::cout << msg_buff << '\n';
+        std::cout << std::string(recv_bytes->content, recv_bytes->length) << '\n';
 
         printInputPrompt();
     }

@@ -5,7 +5,7 @@
 #include "../connection.h"
 
 int Server::start() noexcept {
-    addrinfo* server_addr_struct = resolveConnectionAddress(hostname, port);
+    addrinfo* server_addr_struct = resolveConnectionAddress(config.hostname, config.port);
     if (!server_addr_struct) {
         return -1;
     }
@@ -35,7 +35,7 @@ int Server::createServerSocket(addrinfo *bind_address) noexcept {
 
     DEBUG("Binding socket to the resolved address");
     if (bind(server_socket, bind_address->ai_addr, bind_address->ai_addrlen) == -1) {
-        ERROR(-3, "Failed to bind server socket to address " + hostname + ":" << port);
+        ERROR(-3, "Failed to bind server socket to address " + config.hostname + ":" << config.port);
     }
 
     if(configureServerSocket(server_socket) < 0) {
@@ -58,7 +58,7 @@ int Server::configureServerSocket(SOCKET server_socket) noexcept {
         ERROR(-2, "Failed to activate socket listener: listen(): " + std::system_category().message(GET_SOCKET_ERRNO()));
     }
 
-    INFO("Server is listening for incoming connections at " + hostname + ":" << port);
+    INFO("Server is listening for incoming connections at " + config.hostname + ":" << config.port);
     return 0;
 }
 
@@ -69,6 +69,7 @@ void Server::disconnectClient(SOCKET sockfd) noexcept{
     CLOSE_SOCKET(sockfd);
     connected_clients.erase(sockfd);
     FD_CLR(sockfd, &sock_polling_set);
+    config.connectionClosed(conn_info);
 }
 
 int Server::handleConnections() noexcept{
@@ -86,17 +87,14 @@ int Server::handleConnections() noexcept{
                         return -1;
                     }
                 } else {
-                    char msg_buffer[MESSAGE_MAX_SIZE];
-                    memset(msg_buffer, 0x00, MESSAGE_MAX_SIZE);
+                    Message* message = receiveMessage(sock);
 
-                    int recv_bytes = receiveMessage(sock, msg_buffer);
-
-                    if (recv_bytes <= 0){
+                    if (message == nullptr) {
                         disconnectClient(sock);
                         continue;
                     }
 
-                    broadcastMessage(msg_buffer, recv_bytes);
+                    config.messageHandler(this, sock, connected_clients.at(sock), *message);
                 }
             }
         }
@@ -122,12 +120,19 @@ int Server::acceptConnection() noexcept{
     }
     FD_SET(new_conn, &sock_polling_set);
     connected_clients[new_conn] = new_conn_info;
+
+    config.connectionOpened(new_conn_info);
+
     return 0;
 }
 
-int Server::broadcastMessage(const void* message, MESSAGE_LENGTH_TYPE length) noexcept{
+int Server::sendMessage(SOCKET recipient, Message message) {
+    return ::sendMessage(recipient, message.content, message.length);
+}
+
+int Server::broadcastMessage(Message message) noexcept{
     for (const auto& [sock, client_info] : connected_clients){
-        if (sendMessage(sock, message, length) == -1){
+        if (sendMessage(sock, message) == -1){
             disconnectClient(sock);
             return -1;
         }
@@ -135,8 +140,8 @@ int Server::broadcastMessage(const void* message, MESSAGE_LENGTH_TYPE length) no
     return 0;
 }
 
-int Server::receiveMessage(SOCKET sender_socketfd, char* writable_buffer) noexcept{
-    return ::receiveMessage(sender_socketfd, writable_buffer, &connected_clients);
+Message* Server::receiveMessage(SOCKET sender_socketfd) noexcept{
+    return ::receiveMessage(sender_socketfd, &connected_clients);
 }
 
 Server::~Server() = default;
